@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Unit
 {
-    public abstract class NonPlayerUnit : MonoBehaviour, InterfaceUnit
+    public abstract class NonePlayerUnit : MonoBehaviour, IUnit
     {
         public enum State
         {
@@ -15,24 +15,17 @@ namespace Unit
             Engauge     // 대상을 발견하고 해당 위치로 이동하여 공격하는 상태
         }
 
+        public long SN { get; private set; }
+
         public int MaxHP { get; protected set; }
         public int CurHP { get; set; }
 
         public State CurState { get; protected set; }
 
-
         protected virtual void SetState(State _state)
         {
-            if (State.Roaming <= CurState)
-            {
-                if (State.Roaming <= _state)
-                    CurState = _state;
-            }
-            else
-            {
-                if (State.Roaming > _state)
-                    CurState = _state;
-            }
+            if (CurState != _state)
+                CurState = _state;
         }
     }
 }

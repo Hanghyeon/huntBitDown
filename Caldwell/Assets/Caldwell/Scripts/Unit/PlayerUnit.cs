@@ -2,11 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 namespace Unit
 {
-    public interface InterfaceUnit
+    public class PlayerUnit : MonoBehaviour, IUnit
     {
-        public int MaxHP { get; }
+        public long SN { get; private set; }
+        public int MaxHP { get; protected set; }
         public int CurHP { get; set; }
     }
+
 }
