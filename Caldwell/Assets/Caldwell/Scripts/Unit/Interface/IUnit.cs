@@ -9,5 +9,6 @@ namespace Unit
         public long SN { get; }
         public int MaxHP { get; }
         public int CurHP { get; set; }
+        public void Init();
     }
 }
