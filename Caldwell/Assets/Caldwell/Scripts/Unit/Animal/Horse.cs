@@ -10,7 +10,8 @@ namespace Unit
 
         private List<IUnit> m_hostileUnit;
 
-        private int curTimerCooldown = 0; //밀리세컨드 단위임
+        private int alertTimer = 0; //밀리세컨드 단위임
+        private int engaugeTimer = 0; //밀리세컨드 단위임
 
         [SerializeField]
         private float updateDelayTime = UPDATE_DELAY;
@@ -38,8 +39,9 @@ namespace Unit
             SN = this.GetInstanceID();
             MaxHP = 50;
             CurHP = MaxHP;
-            
-            curTimerCooldown = milliSecTimerValue;
+
+            alertTimer = AlertTimerValueMilliSec;
+            engaugeTimer = EngaugeTimerValueMilliSec;
 
             StartCoroutine("GetState");
         }
@@ -142,6 +144,7 @@ namespace Unit
 
         IEnumerator GetState()
         {
+            int deltaTime = 0;
             while (true)
             {
                 yield return null;
@@ -152,21 +155,29 @@ namespace Unit
 
                     if (m_detectedUnits.Count == 0)
                     {
-                        while (m_detectedUnits.Count == 0 && curTimerCooldown > 0)
+                        while (m_detectedUnits.Count == 0)
                         {
-                            yield return null;
-                            curTimerCooldown -= Mathf.FloorToInt(Time.deltaTime * 1000);
-                        }
+                            if (alertTimer <= 0 ||
+                                engaugeTimer <= 0)
+                            {
+                                TakeSleep();
+                                break;
+                            }
 
-                        if (curTimerCooldown <= 0)
-                        {
-                            TakeSleep();
-                            continue;
+                            yield return null;
+
+                            deltaTime = Mathf.FloorToInt(Time.deltaTime * 1000);
+
+                            if (CurState == State.Alert) alertTimer -= deltaTime;
+                            if (CurState == State.Engauge) engaugeTimer -= deltaTime;
                         }
                     }
 
-                    curTimerCooldown = milliSecTimerValue;
-                    TakeAlert(m_lastTrackingUnit);
+                    alertTimer = AlertTimerValueMilliSec;
+                    engaugeTimer = EngaugeTimerValueMilliSec;
+
+                    if (CurState != State.Engauge)
+                        TakeAlert(m_lastTrackingUnit);
                     TakeEngauge(m_lastTrackingUnit);
                 }
             }
@@ -203,8 +214,10 @@ namespace Unit
 
         public void TakeSleep()
         {
-            if (CurState == State.Alert)
-                SetState(State.Sleep);
+            if (CurState < State.Alert)
+                return;
+
+            SetState(State.Sleep);
         }
 
         public void TakeAlert(Unit.IUnit _target)

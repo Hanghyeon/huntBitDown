@@ -20,7 +20,9 @@ namespace Unit
         protected const float RANGE_SCALING_VALUE = 1f;
 
         [SerializeField]
-        protected int milliSecTimerValue = 10000;
+        protected int AlertTimerValueMilliSec = 10000;
+        [SerializeField]
+        protected int EngaugeTimerValueMilliSec = 5000;
 
         public long SN { get; protected set; }
 
