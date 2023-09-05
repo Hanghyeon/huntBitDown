@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Unit
+namespace Caldwell.Unit
 {
     public class UnitManager : MonoBehaviour
     {
@@ -18,15 +18,34 @@ namespace Unit
                     DontDestroyOnLoad(_manager);
                     
                     _instance = _manager.AddComponent<UnitManager>();
-                    _instance.AllUnits = new List<IUnit>();
+                    _instance.Set();
                 }
 
                 return _instance;
             } 
         }
 
-        public List<IUnit> AllUnits { get; set; }
+        public void Set()
+        {
+        }
+
+        public List<IUnit> m_allUnits = new List<IUnit>();
+        public List<IUnit> AllUnits
+        {
+            get
+            {
+                return m_allUnits;
+            }
+        }
 
 
+        public List<IUnit> m_disableUnits = new List<IUnit>();
+        public List<IUnit> DisableUnits
+        {
+            get
+            {
+                return m_disableUnits;
+            }
+        }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace Unit
+namespace Caldwell.Unit
 {
     public abstract class NonePlayerUnit : MonoBehaviour, IUnit
     {
