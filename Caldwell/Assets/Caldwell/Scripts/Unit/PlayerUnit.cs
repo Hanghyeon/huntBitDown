@@ -11,17 +11,19 @@ namespace Caldwell.Unit
         public int MaxHP { get; protected set; }
         public int CurHP { get; set; }
 
+        public GameObject Own { get { return this.gameObject; } }
+
+        public Renderer m_testSkinRenderer;
 
         private Material m_skin = null;
 
 
         public virtual void Init()
         {
-
             SN = this.GetInstanceID();
             MaxHP = 150;
             CurHP = MaxHP;
-            UnitManager.Instance.AllUnits.Add(this);
+            UnitManager.Instance.RegistUnit(this);
         }
 
         private void Awake()
@@ -30,10 +32,9 @@ namespace Caldwell.Unit
 
             if (!m_skin)
             {
-                var renderer = this.gameObject.GetComponent<Renderer>();
-                m_skin = new Material(renderer.material);
+                m_skin = new Material(m_testSkinRenderer.material);
                 m_skin.color = Color.green;
-                renderer.material = m_skin;
+                m_testSkinRenderer.material = m_skin;
             }
         }
     }

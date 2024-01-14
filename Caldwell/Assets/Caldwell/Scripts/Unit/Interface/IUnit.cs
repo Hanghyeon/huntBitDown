@@ -9,6 +9,7 @@ namespace Caldwell.Unit
         public long SN { get; }
         public int MaxHP { get; }
         public int CurHP { get; set; }
+        public UnityEngine.GameObject Own { get; }
         public void Init();
     }
 }

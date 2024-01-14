@@ -72,7 +72,6 @@ public class Crow : AnimalBase
         //    }
         //}
 
-        UnitManager.Instance.DisableUnits.Add(this);
         this.gameObject.SetActive(false);
     }
 }

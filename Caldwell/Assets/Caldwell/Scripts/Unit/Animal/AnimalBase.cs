@@ -24,7 +24,7 @@ namespace Caldwell.Unit
         protected float GetAlertRange { get { return rangeAlert * RANGE_SCALING_VALUE; } }
         protected float GetEngaugeRange { get { return rangeEngauge * RANGE_SCALING_VALUE; } }
 
-        protected IUnit m_lastTrackingUnit = null;
+        protected IUnit m_lastTrackingPlayerUnit = null;
 
         protected List<IUnit> m_detectedUnits = null;
         
@@ -33,6 +33,7 @@ namespace Caldwell.Unit
 
         protected State nextState { get; set; }
 
+        public IUnit GetLastTrackingUnit { get { return m_lastTrackingPlayerUnit; } }
 
 #if UNITY_EDITOR
         protected void OnDrawGizmos()
@@ -45,9 +46,9 @@ namespace Caldwell.Unit
         }
 #endif
 
-        protected void Awake()
+        protected override void Awake()
         {
-            SN = this.GetInstanceID();
+            base.Awake();
             Set(50);
         }
 
@@ -60,7 +61,7 @@ namespace Caldwell.Unit
             SetTestStateMaterial();
             SetTimers(AlertTimerValueMilliSec, EngaugeTimerValueMilliSec);
 
-            StartCoroutine(UpdateState());
+            StartCoroutine(CheckRaound());
         }
 
         protected virtual void SetTestStateMaterial()
@@ -81,12 +82,7 @@ namespace Caldwell.Unit
         }
 
         // Update is called once per frame
-        void Update()
-        {
-            
-        }
-
-        private void LateUpdate()
+        protected virtual void Update()
         {
             IntroductionOther();
         }
@@ -96,42 +92,14 @@ namespace Caldwell.Unit
             if (!testSkin)
                 return;
 
-            if (CurState == State.Sleep)
-            {
-                testSkin.color = Color.green;
-                m_renderer.material = testSkin;
-            }
-
-            if (CurState == State.Alert)
-            {
-                testSkin.color = Color.yellow;
-                m_renderer.material = testSkin;
-            }
-
-            if (CurState == State.Roaming)
-            {
-                testSkin.color = Color.red + Color.green * 0.5f;
-                m_renderer.material = testSkin;
-            }
-
-            if (CurState == State.Engauge)
-            {
-                testSkin.color = Color.red;
-                m_renderer.material = testSkin;
-            }
-
-            if (CurHP <= 0)
-            {
-                testSkin.color = Color.white * (Color.grey * 0.2f);
-                m_renderer.material = testSkin;
-            }
+            UpdateState();
         }
 
         public List<IUnit> GetNearUnits(float _range)
         {
             List<IUnit> nearUnits = new List<IUnit>();
 
-            var allUnits = UnitManager.Instance.AllUnits;
+            List<IUnit> allUnits = new List<IUnit>(UnitManager.Instance.AllUnits);
 
             for (int unitIdx = 0; unitIdx < allUnits.Count; unitIdx++)
             {
@@ -155,10 +123,10 @@ namespace Caldwell.Unit
         {
             if (_collection == null)
                 _collection = new List<IUnit>();
-            else
+            else if (_collection.Count != 0)
                 _collection.Clear();
 
-            var allUnits = UnitManager.Instance.AllUnits;
+            List<IUnit> allUnits = new List<IUnit>(UnitManager.Instance.AllUnits);
 
             for (int unitIdx = 0; unitIdx < allUnits.Count; unitIdx++)
             {
@@ -169,6 +137,9 @@ namespace Caldwell.Unit
                 if (!compo)
                     continue;
 
+                if (this.transform == compo.transform)
+                    continue;
+
                 if (!Util.IsInRange(this.transform, compo.transform, _range))
                     continue;
 
@@ -176,7 +147,7 @@ namespace Caldwell.Unit
             }
         }
 
-        protected virtual IEnumerator UpdateState()
+        protected virtual IEnumerator CheckRaound()
         {
             while (true)
             {
@@ -184,13 +155,13 @@ namespace Caldwell.Unit
 
                 UpdateNearUnits(GetAlertRange, ref m_detectedUnits);
 
-                if (m_detectedUnits == null)
-                    yield break;
-
-                m_lastTrackingUnit = m_detectedUnits.Count != 0 ? m_detectedUnits[0] : null;
+                IUnit detectedPlayerUnit = m_detectedUnits.Find(unit => unit is PlayerUnit);
 
                 int deltaTime = 0;
-                while (m_detectedUnits.Count == 0)
+
+                m_lastTrackingPlayerUnit = m_detectedUnits.Count != 0 ? m_detectedUnits[0] : null;
+
+                while (detectedPlayerUnit == null)
                 {
                     if (alertTimer <= 0 ||
                         engaugeTimer <= 0)
@@ -207,15 +178,15 @@ namespace Caldwell.Unit
                     if (CurState == State.Engauge) engaugeTimer -= deltaTime;
 
                     UpdateNearUnits(GetAlertRange, ref m_detectedUnits);
+
+                    detectedPlayerUnit = m_detectedUnits.Find(unit => unit is PlayerUnit);
                 }
 
-                alertTimer = AlertTimerValueMilliSec;
-                engaugeTimer = EngaugeTimerValueMilliSec;
+                SetTimers(AlertTimerValueMilliSec, EngaugeTimerValueMilliSec);
 
                 if (CurState != State.Engauge)
-                    TakeAlert(m_lastTrackingUnit);
-                TakeEngauge(m_lastTrackingUnit);
-
+                    CheckAndSetAlert(m_lastTrackingPlayerUnit);
+                CheckAndSetEngauge(m_lastTrackingPlayerUnit);
             }
         }
 
@@ -256,7 +227,7 @@ namespace Caldwell.Unit
             SetState(State.Sleep);
         }
 
-        protected virtual void TakeAlert(Unit.IUnit _target)
+        protected virtual void CheckAndSetAlert(Unit.IUnit _target)
         {
             bool isTargetInRange = false;
             if (_target is PlayerUnit)
@@ -271,7 +242,7 @@ namespace Caldwell.Unit
             }
         }
 
-        protected virtual void TakeEngauge(Unit.IUnit _target)
+        protected virtual void CheckAndSetEngauge(Unit.IUnit _target)
         {
             bool isTargetInRange = false;
             if (_target is PlayerUnit)
@@ -283,6 +254,39 @@ namespace Caldwell.Unit
             if (isTargetInRange)
             {
                 SetState(State.Engauge);
+            }
+        }
+
+        protected virtual void UpdateState()
+        {
+            if (CurState == State.Sleep)
+            {
+                testSkin.color = Color.green;
+                m_renderer.material = testSkin;
+            }
+
+            if (CurState == State.Alert)
+            {
+                testSkin.color = Color.yellow;
+                m_renderer.material = testSkin;
+            }
+
+            if (CurState == State.Roaming)
+            {
+                testSkin.color = Color.red + Color.green * 0.5f;
+                m_renderer.material = testSkin;
+            }
+
+            if (CurState == State.Engauge)
+            {
+                testSkin.color = Color.red;
+                m_renderer.material = testSkin;
+            }
+
+            if (CurHP <= 0)
+            {
+                testSkin.color = Color.white * (Color.grey * 0.2f);
+                m_renderer.material = testSkin;
             }
         }
     }

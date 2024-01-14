@@ -29,12 +29,32 @@ namespace Caldwell.Unit
         {
         }
 
-        public List<IUnit> m_allUnits = new List<IUnit>();
-        public List<IUnit> AllUnits
+        public void RegistUnit(IUnit _unit)
+        {
+            long sn = _unit.SN;
+            if (!m_unitBySN.ContainsKey(sn))
+            {
+                m_unitBySN.Add(sn, _unit);
+            }
+        }
+
+
+        public void UnregistUnit(IUnit _unit)
+        {
+            long sn = _unit.SN;
+            if (m_unitBySN.ContainsKey(sn))
+            {
+                m_unitBySN.Remove(sn);
+            }
+        }
+
+        private Dictionary<long, IUnit> m_unitBySN = new Dictionary<long, IUnit>();
+
+        public ICollection<IUnit> AllUnits
         {
             get
             {
-                return m_allUnits;
+                return m_unitBySN.Values;
             }
         }
 
@@ -44,6 +64,16 @@ namespace Caldwell.Unit
         {
             get
             {
+                m_disableUnits.Clear();
+
+                foreach (IUnit unit in m_unitBySN.Values)
+                {
+                    if (unit.CurHP > 0)
+                        continue;
+
+                    m_disableUnits.Add(unit);
+                }
+                
                 return m_disableUnits;
             }
         }

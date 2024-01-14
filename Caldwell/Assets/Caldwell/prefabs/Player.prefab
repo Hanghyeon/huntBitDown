@@ -42,6 +42,7 @@ GameObject:
   - component: {fileID: 1276135967154176527}
   - component: {fileID: 4446564969473024419}
   - component: {fileID: 8108231373198698148}
+  - component: {fileID: 1175951600649506859}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -65,7 +66,7 @@ Transform:
   - {fileID: 7193542309979844315}
   - {fileID: 8532589734358941831}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &4446564969473024419
 Rigidbody:
@@ -108,11 +109,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 7
   groundDrag: 5
+  jumpForce: 12
+  jumpCoolDown: 0.15
+  airMultiplier: 0.4
   playerHeight: 2
   whatIsGround:
     serializedVersion: 2
     m_Bits: 1024
   orientation: {fileID: 7193542309979844315}
+--- !u!114 &1175951600649506859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4762936621874548919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e5d5adc1a3fba14eb919610f7e9b4a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_testSkinRenderer: {fileID: 6600656340647636492}
 --- !u!1 &6823894534502397926
 GameObject:
   m_ObjectHideFlags: 0

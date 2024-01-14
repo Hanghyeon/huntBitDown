@@ -24,16 +24,23 @@ namespace Caldwell.Unit
         [SerializeField]
         protected int EngaugeTimerValueMilliSec = 5000;
 
-        public long SN { get; protected set; }
+        public long SN { get; private set; }
 
         public int MaxHP { get; protected set; }
         public int CurHP { get; set; }
 
         public State CurState { get; protected set; }
+        public GameObject Own { get { return this.gameObject; } }
+
+        protected virtual void Awake()
+        {
+            SN = this.GetInstanceID();
+            Init();
+        }
 
         public virtual void Init()
         {
-            UnitManager.Instance.AllUnits.Add(this);
+            UnitManager.Instance.RegistUnit(this);
         }
 
         protected virtual void SetState(State _state)
@@ -41,5 +48,6 @@ namespace Caldwell.Unit
             if (CurState != _state)
                 CurState = _state;
         }
-    }
+
+}
 }
